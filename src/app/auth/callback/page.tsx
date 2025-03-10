@@ -2,17 +2,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 import { chechAuthStatus } from "./actions";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
 export default function page() {
   const router = useRouter();
+  const { user } = useKindeBrowserClient();
   const { data } = useQuery({
     queryKey: ["checkAuthStatus"],
     queryFn: async () => await chechAuthStatus(),
   });
-  console.log("DATA", data);
-
+  useEffect(() => {
+    const striptPaymentLink = localStorage.getItem("StripePaymentLink");
+    if (data?.success && striptPaymentLink && user.email) {
+      localStorage.removeItem("StripePaymentLink");
+      router.push(striptPaymentLink + `?prefilled_email=${user.email}`);
+    } else if (data?.success == false) {
+      router.push("/");
+    }
+  }, [router, data, user]);
   if (data?.success) router.push("/");
   return (
     <div className="mt-20 w-full flex justify-center">

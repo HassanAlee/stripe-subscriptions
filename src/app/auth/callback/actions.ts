@@ -8,8 +8,6 @@ export async function chechAuthStatus() {
   const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
   //   signup
   if (!existingUser) {
-    console.log("No existing user");
-
     await prisma.user.create({
       data: {
         id: user.id,
